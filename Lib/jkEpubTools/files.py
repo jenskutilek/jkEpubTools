@@ -30,14 +30,19 @@ class XHTMLFile(object):
 
 class EpubFile(object):
     def save(self, epub_root):
+        if self.path is not None:
+            path = join(epub_root, self.path, self.name)
+        else:
+            path = join(epub_root, self.name)
         c = self.get_contents()
-        f = codecs.open(join(epub_root, self.name), "wb", "utf-8")
+        f = codecs.open(path, "wb", "utf-8")
         f.write(c)
         f.close()
 
 
 class ContainerXML(EpubFile):
     def __init__(self):
+        self.path = "META-INF"
         self.name = "container.xml"
     
     def get_contents(self):
@@ -47,6 +52,7 @@ class ContainerXML(EpubFile):
 class ContentOPF(EpubFile):
     def __init__(self, document):
         self.document = document
+        self.path = "OEBPS"
         self.name = "content.opf"
     
     def get_contents(self):
@@ -92,13 +98,29 @@ class ContentOPF(EpubFile):
         h += '  <manifest>\n'
         if self.document.metadata.cover is not None:
             h += '    <item href="%s" id="cover" media-type="image/jpeg"/>\n' % (self.document.metadata.cover, self.document.metadata.cover_type)
+        
+        h += '    <item id="ncx"\n          href="toc.ncx"\n          media-type="application/x-dtbncx+xml"/>\n'
+        
+        if self.document.metadata.version == "3.0":
+            h += '    <item id="nav"\n          href="nav.xhtml"\n          media-type="application/xhtml+xml"\n          properties="nav"/>\n'
+        
         for i in range(len(self.document.chapters)):
-            h += '    <item href="OEBPS/%03i.xhtml" id="x%i" media-type="application/xhtml+xml"/>\n' % (i+1, i+1)
+            h += '    <item id="x%i"\n          href="%03i.xhtml"\n         media-type="application/xhtml+xml"/>\n' % (i+1, i+1)
+        
+        for i in range(len(self.document.resources)):
+            r = self.document.resources[i]
+            h += '    <item id="resource%i"\n          href="%s"\n          media-type="%s"/>\n' % (i, r.uri, r.mime)
+            
+        
         h += '  </manifest>\n'
         
         # Spine element
         
         h += '  <spine toc="ncx">\n'
+        
+        if self.document.metadata.version == "3.0":
+            h += '    <itemref idref="nav"/>\n'
+        
         for i in range(len(self.document.chapters)):
             h += '    <itemref idref="x%i"/>\n' % (i+1)
         h += '  </spine>\n'
@@ -106,6 +128,7 @@ class ContentOPF(EpubFile):
         # Guide element
         
         h += '  <guide>\n'
+        # TODO
         h += '  </guide>\n'
         
         h += "</package>\n"
@@ -115,20 +138,50 @@ class ContentOPF(EpubFile):
 class EncryptionXML(EpubFile):
     def __init__(self, document):
         self.document = document
+        self.path = "META-INF"
         self.name = "encryption.xml"
     
     def get_contents(self):
         h = '<encryption\n    xmlns="urn:oasis:names:tc:opendocument:xmlns:container"\n    xmlns:enc="http://www.w3.org/2001/04/xmlenc#">\n'
         for r in self.document.resources:
             if r.encrypt:
-                h += '    <enc:EncryptedData>\n        <enc:EncryptionMethod Algorithm="http://www.idpf.org/2008/embedding"/>\n        <enc:CipherData>\n            <enc:CipherReference URI="%s" />\n        </enc:CipherData>\n    </enc:EncryptedData>\n' % r.uri
+                h += '    <enc:EncryptedData>\n        <enc:EncryptionMethod Algorithm="http://www.idpf.org/2008/embedding"/>\n        <enc:CipherData>\n            <enc:CipherReference URI="OEBPS/%s" />\n        </enc:CipherData>\n    </enc:EncryptedData>\n' % r.uri
         h += '</encryption>\n'
+        return h
+
+
+class NavXHTML(EpubFile):
+    def __init__(self, document):
+        self.document = document
+        self.path = "OEBPS"
+        self.name = "nav.xhtml"
+    
+    def get_contents(self):
+        
+        title = "Table of Contents"
+        
+        # header
+        
+        h = u'<?xml version="1.0" encoding="UTF-8" ?>\n<html xmlns="http://www.w3.org/1999/xhtml"\n    xmlns:ops="http://www.idpf.org/2007/ops"\n    xml:lang="%s">\n    <head>\n        <title>Table of contents</title>\n' % self.document.metadata.language
+        if self.document.stylesheet is not None:
+            h += '        <link rel="stylesheet" href="%s" type="text/css" />\n' % self.document.stylesheet
+        h += '    </head>\n    <body>\n        <nav ops:type="toc">\n            <h1>Table of contents</h1>\n            <ol>\n                <li><a href="nav.xhtml">Table of contents</a></li>\n'
+        
+        for i in range(len(self.document.chapters)):
+            chapter = self.document.chapters[i]
+            h += '                <li><a href="%03i.xhtml">%s</a></li>' % (i+1, chapter.title)
+        
+        # footer
+        
+        h += '            </ol>\n        </nav>\n     </body>\n</html>\n'
+        
         return h
 
 
 class TocNCX(EpubFile):
     def __init__(self, document):
         self.document = document
+        self.path = "OEBPS"
         self.name = "toc.ncx"
     
     def get_contents(self):
@@ -155,10 +208,10 @@ class TocNCX(EpubFile):
         h += '  <navMap>\n'
         for i in range(len(self.document.chapters)):
             chapter = self.document.chapters[i]
-            h += '    <navPoint class="chapter" id="navpoint-%i" playOrder="%i"/>\n' % (i+1, i)
+            h += '    <navPoint class="chapter" id="navpoint-%i" playOrder="%i">\n' % (i+1, i)
             h += '        <navLabel>\n            <text>%s</text>\n' % chapter.title
             h += '        </navLabel>\n'
-            h += '        <content src="OEBPS/%03i.xhtml"/>\n' % (i+1)
+            h += '        <content src="%03i.xhtml"/>\n' % (i+1)
             h += '    </navPoint>\n'
         h += '  </navMap>\n'
         
@@ -171,7 +224,16 @@ class TocNCX(EpubFile):
 
 class EpubMimeType(EpubFile):
     def __init__(self):
+        self.path = None
         self.name = 'mimetype'
     
     def get_contents(self):
         return 'application/epub+zip'
+
+class IBooksDisplayOptions(EpubFile):
+    def __init__(self):
+        self.path = 'META-INF'
+        self.name = 'com.apple.ibooks.display-options.xml'
+    
+    def get_contents(self):
+        return '<?xml version="1.0" encoding="UTF-8"?>\n<display_options>\n<platform name="*">\n<option name="specified-fonts">true</option>\n</platform>\n</display_options>\n'

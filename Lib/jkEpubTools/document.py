@@ -5,10 +5,10 @@ import codecs
 import errno
 
 from os import makedirs
-from os.path import exists, join
+from os.path import dirname, exists, join
 from shutil import copyfile
 
-from jkEpubTools.files import ContentOPF, TocNCX, EpubMimeType, XHTMLFile
+from jkEpubTools.files import ContainerXML, ContentOPF, EncryptionXML, EpubMimeType, IBooksDisplayOptions, NavXHTML, TocNCX, XHTMLFile
 from jkEpubTools.metadata import MetaData
 
 
@@ -31,6 +31,8 @@ class Document(BaseDocument):
         
         self.chapters = []
         self.resources = []
+        self.stylesheet = None
+        
         self.metadata = None
     
     def __repr__(self):
@@ -72,7 +74,8 @@ class Document(BaseDocument):
             self.add_resource_from_dict(resource_dict)
     
     def save_epub(self, epub_root):
-        self.safe_makedirs(epub_root)
+        self.safe_makedirs(join(epub_root, "OEBPS"))
+        self.safe_makedirs(join(epub_root, "META-INF"))
         
         # mimetype file
         mimetype = EpubMimeType()
@@ -84,9 +87,27 @@ class Document(BaseDocument):
         toc_ncx = TocNCX(self)
         toc_ncx.save(epub_root)
         
+        if self.metadata.version == "3.0":
+            nav_xhtml = NavXHTML(self)
+            nav_xhtml.save(epub_root)
+        
         for i in range(len(self.chapters)):
             file_name = "%03i.xhtml" % (i+1)
             self.chapters[i].save_epub(epub_root, file_name)
+        
+        for res in self.resources:
+            res.save_epub(epub_root)
+        
+        # META-INF
+        
+        container_xml = ContainerXML()
+        container_xml.save(epub_root)
+        
+        encryption_xml = EncryptionXML(self)
+        encryption_xml.save(epub_root)
+        
+        ibooks_options = IBooksDisplayOptions()
+        ibooks_options.save(epub_root)
 
 
 class Chapter(BaseDocument):
@@ -129,15 +150,26 @@ class Chapter(BaseDocument):
             f.close()
         else:
             # Chapter content is copied verbatim from src file
-            src = self.src
-            if exists(src):
-                copyfile(src, join(base_dir, file_name))
+            if exists(self.src):
+                copyfile(self.src, join(base_dir, file_name))
             else:
                 print "ERROR: Chapter source not found: '%s'" % self.src
 
 
-class Resource(object):
+class Resource(BaseDocument):
     def __init__(self, resource_dict):
         self.src = resource_dict.get("src", None)
         self.uri = resource_dict.get("uri", None)
+        # TODO guess mime type if not supplied
+        self.mime = resource_dict.get("mime", None)
+        if self.mime is None:
+            from jkEpubTools.mime import guess_mime_type
+            self.mime = guess_mime_type(self.uri)
         self.encrypt = resource_dict.get("encrypt", False)
+    
+    def save_epub(self, epub_root):
+        self.safe_makedirs(join(epub_root, "OEBPS", dirname(self.uri)))
+        if exists(self.src):
+            copyfile(self.src, join(epub_root, "OEBPS", self.uri))
+        else:
+            print "ERROR: Resource not found: '%s'" % self.src
