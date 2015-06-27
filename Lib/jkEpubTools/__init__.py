@@ -6,7 +6,7 @@ import zipfile
 from os import walk
 from os.path import join
 
-from obfuscation import get_obfuscation_key, get_files_to_obfuscate, xor_array
+from jkEpubTools.obfuscation import get_obfuscation_key, get_files_to_obfuscate, xor_array
 
 
 def build(in_path, out_file):
