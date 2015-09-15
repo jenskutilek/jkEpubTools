@@ -35,9 +35,10 @@ class EpubFile(object):
         else:
             path = join(epub_root, self.name)
         c = self.get_contents()
-        f = codecs.open(path, "wb", "utf-8")
-        f.write(c)
-        f.close()
+        if c is not None:
+            f = codecs.open(path, "wb", "utf-8")
+            f.write(c)
+            f.close()
 
 
 class ContainerXML(EpubFile):
