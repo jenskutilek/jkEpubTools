@@ -142,11 +142,15 @@ class EncryptionXML(EpubFile):
         self.name = "encryption.xml"
     
     def get_contents(self):
+        num_encrypted_items = 0
         h = '<encryption\n    xmlns="urn:oasis:names:tc:opendocument:xmlns:container"\n    xmlns:enc="http://www.w3.org/2001/04/xmlenc#">\n'
         for r in self.document.resources:
             if r.encrypt:
+                num_encrypted_items += 1
                 h += '    <enc:EncryptedData>\n        <enc:EncryptionMethod Algorithm="http://www.idpf.org/2008/embedding"/>\n        <enc:CipherData>\n            <enc:CipherReference URI="OEBPS/%s" />\n        </enc:CipherData>\n    </enc:EncryptedData>\n' % r.uri
         h += '</encryption>\n'
+        if num_encrypted_items == 0:
+            return None
         return h
 
 
