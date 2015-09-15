@@ -205,7 +205,7 @@ class TocNCX(EpubFile):
             h += '    <meta content="%s" name="dtb:uid"/>\n' % self.document.metadata.uuid
         
         # FIXME
-        h += '    <meta content="2" name="dtb:depth"/>\n'
+        h += '    <meta content="1" name="dtb:depth"/>\n'
         h += '    <meta content="0" name="dtb:totalPageCount"/>\n'
         h += '    <meta content="0" name="dtb:maxPageNumber"/>\n'
         h += '  </head>\n'
