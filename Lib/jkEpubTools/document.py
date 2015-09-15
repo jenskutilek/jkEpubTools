@@ -33,6 +33,7 @@ class Document(BaseDocument):
         self.resources = []
         self.stylesheet = None
         
+        self.cover = None
         self.metadata = None
     
     def __repr__(self):
@@ -56,6 +57,9 @@ class Document(BaseDocument):
     
     def set_metadata_from_dict(self, meta_dict):
         self.metadata = MetaData(meta_dict)
+    
+    def set_cover_from_dict(self, cover_dict):
+        self.cover = Cover(cover_dict)
     
     def add_chapter_from_dict(self, chapter_dict):
         c = Chapter()
@@ -83,6 +87,9 @@ class Document(BaseDocument):
         
         content_opf = ContentOPF(self)
         content_opf.save(epub_root)
+        
+        if self.cover is not None:
+            self.cover.save_epub(epub_root)
         
         toc_ncx = TocNCX(self)
         toc_ncx.save(epub_root)
@@ -154,6 +161,47 @@ class Chapter(BaseDocument):
                 copyfile(self.src, join(base_dir, file_name))
             else:
                 print "ERROR: Chapter source not found: '%s'" % self.src
+
+
+class Cover(BaseDocument):
+    def __init__(self, cover_dict):
+        self.src = cover_dict.get("src", None)
+        self.uri = cover_dict.get("uri", None)
+        # TODO guess mime type if not supplied
+        self.mime = cover_dict.get("mime", None)
+        if self.mime is None:
+            from jkEpubTools.mime import guess_mime_type
+            self.mime = guess_mime_type(self.uri)
+        self.encrypt = cover_dict.get("encrypt", False)
+        self.width = cover_dict.get("width", None)
+        self.height = cover_dict.get("height", None)
+        if None in (self.width, self.height):
+            print "ERROR: width and height of cover image must be supplied, or resulting epub will be invalid."
+    
+    def as_html(self):
+        #print "Cover.as_html:", self.get_id()
+        x = XHTMLFile(title='Cover', stylesheet_path='style/stylesheet.css')
+        h = x.get_header()
+        h += '    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"\n'
+        h += '      width="100%%" height="100%%" viewBox="0 0 %s %s" preserveAspectRatio="xMidYMid meet">\n' % (self.width, self.height)
+        h += '      <image width="%s" height="%s" xlink:href="%s" />\n' % (self.width, self.height, self.uri)
+        h += '    </svg>\n'
+        h += x.get_footer()
+        return h
+    
+    def save_epub(self, epub_root):
+        base_dir = join(epub_root, 'OEBPS')
+        self.safe_makedirs(base_dir)
+        c = self.as_html()
+        f = codecs.open(join(base_dir, 'cover.xhtml'), 'wb', 'utf-8')
+        f.write(c)
+        f.close()
+        
+        self.safe_makedirs(join(epub_root, "OEBPS", dirname(self.uri)))
+        if exists(self.src):
+            copyfile(self.src, join(epub_root, "OEBPS", self.uri))
+        else:
+            print "ERROR: Cover image not found: '%s'" % self.src
 
 
 class Resource(BaseDocument):

@@ -82,8 +82,8 @@ class ContentOPF(EpubFile):
                 )
         if self.document.metadata.title is not None:
             h += "    <dc:title>%s</dc:title>\n" % self.document.metadata.title
-        if self.document.metadata.cover is not None:
-            h += '    <meta name="cover" content="cover"/>\n'
+        if self.document.cover is not None:
+            h += '    <meta name="cover" content="cover-image"/>\n'
         if self.document.metadata.date is None:
             h += '    <dc:date>%s</dc:date>\n' % time.strftime("%Y-%m-%dT%H:%M:%S+00:00")
         else:
@@ -96,16 +96,19 @@ class ContentOPF(EpubFile):
         # Manifest element
         
         h += '  <manifest>\n'
-        if self.document.metadata.cover is not None:
-            h += '    <item href="%s" id="cover" media-type="image/jpeg"/>\n' % (self.document.metadata.cover, self.document.metadata.cover_type)
+        if self.document.cover is not None:
+            h += '    <item href="%s" id="cover-image" media-type="%s"/>\n' % (self.document.cover.uri, self.document.cover.mime)
         
         h += '    <item id="ncx"\n          href="toc.ncx"\n          media-type="application/x-dtbncx+xml"/>\n'
         
         if self.document.metadata.version == "3.0":
             h += '    <item id="nav"\n          href="nav.xhtml"\n          media-type="application/xhtml+xml"\n          properties="nav"/>\n'
         
+        if self.document.cover is not None:
+            h += '    <item id="cover"\n          href="cover.xhtml"\n          media-type="application/xhtml+xml"/>\n'
+        
         for i in range(len(self.document.chapters)):
-            h += '    <item id="x%i"\n          href="%03i.xhtml"\n         media-type="application/xhtml+xml"/>\n' % (i+1, i+1)
+            h += '    <item id="x%i"\n          href="%03i.xhtml"\n          media-type="application/xhtml+xml"/>\n' % (i+1, i+1)
         
         for i in range(len(self.document.resources)):
             r = self.document.resources[i]
@@ -121,6 +124,9 @@ class ContentOPF(EpubFile):
         if self.document.metadata.version == "3.0":
             h += '    <itemref idref="nav"/>\n'
         
+        if self.document.cover is not None:
+            h += '    <itemref idref="cover"/>\n'
+        
         for i in range(len(self.document.chapters)):
             h += '    <itemref idref="x%i"/>\n' % (i+1)
         h += '  </spine>\n'
@@ -128,7 +134,8 @@ class ContentOPF(EpubFile):
         # Guide element
         
         h += '  <guide>\n'
-        # TODO
+        # TODO?
+        h += '    <reference href="cover.xhtml" title="Cover" type="cover" />\n'
         h += '  </guide>\n'
         
         h += "</package>\n"
