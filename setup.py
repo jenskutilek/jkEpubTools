@@ -8,8 +8,6 @@ setup(
 		description = "Support libraries for epub generation.",
 		author = "Jens Kutilek",
 		url = "https://github.com/jenskutilek/jkEpubTools",
-		license = "MIT",
-		platforms = ["Mac"],
 		packages = ["jkEpubTools"],
 		package_dir = {"": "Lib"},
 	)
