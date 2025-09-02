@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uuid_id">
+  <metadata xmlns:opf="http://www.idpf.org/2007/opf" xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:publisher>Jens Kutilek</dc:publisher>
+    <dc:rights>Copyright 2015 by Jens Kutilek. All rights reserved.</dc:rights>
+    <dc:language>en</dc:language>
+    <dc:creator opf:file-as="Lovecraft, H. P." opf:role="aut">H. P. Lovecraft</dc:creator>
+    <dc:title>The Haunter of the Dark</dc:title>
+    <meta name="cover" content="cover-image"/>
+    <dc:date>2015-09-26T18:55:42+00:00</dc:date>
+    <dc:identifier id="uuid_id" opf:scheme="uuid">604f67fc-301c-5b70-9416-0352301d1c08</dc:identifier>
+    <dc:subject>Horror</dc:subject>
+  </metadata>
+  <manifest>
+    <item href="cover-image.jpg" id="cover-image" media-type="image/jpeg"/>
+    <item id="ncx"
+          href="toc.ncx"
+          media-type="application/x-dtbncx+xml"/>
+    <item id="nav"
+          href="nav.xhtml"
+          media-type="application/xhtml+xml"
+          properties="nav"/>
+    <item id="cover"
+          href="cover.xhtml"
+          media-type="application/xhtml+xml"/>
+    <item id="x1"
+          href="001.xhtml"
+          media-type="application/xhtml+xml"/>
+    <item id="x2"
+          href="002.xhtml"
+          media-type="application/xhtml+xml"/>
+    <item id="x3"
+          href="003.xhtml"
+          media-type="application/xhtml+xml"/>
+    <item id="resource0"
+          href="style/stylesheet.css"
+          media-type="text/css"/>
+    <item id="resource1"
+          href="hertz-specimen-1.png"
+          media-type="image/png"/>
+    <item id="resource2"
+          href="hertz-specimen-2.png"
+          media-type="image/png"/>
+    <item id="resource3"
+          href="hertz-specimen-3.png"
+          media-type="image/png"/>
+    <item id="resource4"
+          href="hertz-specimen-4.png"
+          media-type="image/png"/>
+    <item id="resource5"
+          href="hertz-specimen-5.png"
+          media-type="image/png"/>
+    <item id="resource6"
+          href="hertz-specimen-6.png"
+          media-type="image/png"/>
+    <item id="resource7"
+          href="style/Merriweather-Regular.ttf"
+          media-type="application/x-font-opentype"/>
+    <item id="resource8"
+          href="style/Merriweather-Italic.ttf"
+          media-type="application/x-font-opentype"/>
+    <item id="resource9"
+          href="style/Merriweather-Light.ttf"
+          media-type="application/x-font-opentype"/>
+  </manifest>
+  <spine toc="ncx">
+    <itemref idref="nav"/>
+    <itemref idref="cover"/>
+    <itemref idref="x1"/>
+    <itemref idref="x2"/>
+    <itemref idref="x3"/>
+  </spine>
+  <guide>
+    <reference href="cover.xhtml" title="Cover" type="cover" />
+  </guide>
+</package>
