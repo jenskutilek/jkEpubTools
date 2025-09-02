@@ -1,0 +1,104 @@
+
+@font-face {
+    font-family: "HertzEpub";
+    src: url("Merriweather-Regular.ttf") format("opentype");
+}
+
+@font-face {
+    font-family: "HertzEpub";
+    src: url("Merriweather-Italic.ttf") format("opentype");
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "HertzEpubLight";
+    src: url("Merriweather-Light.ttf") format("opentype");
+}
+
+
+body {
+    font-family: "HertzEpub";
+    line-height: 1.45em;
+    /* margin: 2em; */
+    max-width: 40em;
+    color: #000;
+    background: #fff;
+    /* line-height: 1.45em; */ /* iBooks */
+    line-height: 1.25em;
+}
+
+blockquote {
+    font-style: italic;
+    margin: 0;
+    padding: 0;
+}
+
+blockquote.verse {
+    font-style: italic;
+    text-align: right;
+    margin: 1em 0 2.9em 0;
+}
+
+blockquote em {
+    font-style: normal;
+}
+
+h1 {
+    font-family: "HertzEpubLight";
+    font-weight: normal;
+    font-size: 2em;
+    letter-spacing: -1px;
+    line-height: 1em;
+    margin: 0 0 0.725em 0;
+}
+
+h2 {
+    font-family: "HertzEpubLight";
+    font-weight: normal;
+    margin-top: 3em;
+    line-height: 1.2em;
+    font-size: 1.8em;
+    letter-spacing: -1px;
+}
+
+h3 {
+    margin-top: 2em;
+}
+
+h4 {
+    margin: 0 0 1.1em 0;
+    font-size: 1.1em;
+    font-style: italic;
+    font-weight: normal;
+}
+
+p {
+    margin: 0 0 0.7em 0;
+}
+
+p.author {
+    margin: 1em 0 2.9em 0;
+}
+
+p.dedication {
+    margin: 0 0 1.45em 0;
+}
+
+p.date {
+    margin: 1.45em 0 0.7em 0;
+    text-align: right;
+}
+
+div.diary {
+    font-style: italic;
+}
+.spaced {
+    letter-spacing: 0.1em;
+}
+
+p.stars {
+    font-size: 0.8em;
+    text-align: center;
+    letter-spacing: 1em;
+    padding: 1em 0 1em 0;
+}

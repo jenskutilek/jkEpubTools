@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1" xml:lang="en">
+  <head>
+    <meta content="604f67fc-301c-5b70-9416-0352301d1c08" name="dtb:uid"/>
+    <meta content="1" name="dtb:depth"/>
+    <meta content="0" name="dtb:totalPageCount"/>
+    <meta content="0" name="dtb:maxPageNumber"/>
+  </head>
+  <docTitle>
+    <text>The Haunter of the Dark</text>
+  </docTitle>
+  <docAuthor>
+    <text>H. P. Lovecraft</text>
+  </docAuthor>
+  <navMap>
+    <navPoint class="chapter" id="navpoint-1" playOrder="0">
+        <navLabel>
+            <text>About FF Hertz</text>
+        </navLabel>
+        <content src="001.xhtml"/>
+    </navPoint>
+    <navPoint class="chapter" id="navpoint-2" playOrder="1">
+        <navLabel>
+            <text>The Haunter of the Dark</text>
+        </navLabel>
+        <content src="002.xhtml"/>
+    </navPoint>
+    <navPoint class="chapter" id="navpoint-3" playOrder="2">
+        <navLabel>
+            <text>Trademark Notice</text>
+        </navLabel>
+        <content src="003.xhtml"/>
+    </navPoint>
+  </navMap>
+</ncx>
