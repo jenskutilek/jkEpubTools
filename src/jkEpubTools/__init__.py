@@ -41,7 +41,3 @@ def build(in_path, out_file):
                     z.write(join(root, f), join(epub_root, f))
     z.close()
     print("... done.")
-
-
-if __name__ == "__main__":
-    build("build/epub", "RoboRef.epub")
