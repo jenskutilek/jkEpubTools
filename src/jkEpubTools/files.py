@@ -67,8 +67,8 @@ class ContainerXML(EpubFile):
             '<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">\n'
             "   <rootfiles>\n"
             '      <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>\n'
-            "   </rootfiles>\n'"
-            "'</container>\n"
+            "   </rootfiles>\n"
+            "</container>\n"
         )
 
 
@@ -150,7 +150,7 @@ class ContentOPF(EpubFile):
         for i in range(len(self.document.chapters)):
             h += (
                 f'    <item id="x{i + 1}"\n'
-                f'          href="%{i + 1:03i}.xhtml"\n'
+                f'          href="{i + 1:03d}.xhtml"\n'
                 '          media-type="application/xhtml+xml"/>\n'
             )
 
@@ -252,10 +252,7 @@ class NavXHTML(EpubFile):
 
         for i in range(len(self.document.chapters)):
             chapter = self.document.chapters[i]
-            h += '                <li><a href="%03i.xhtml">%s</a></li>' % (
-                i + 1,
-                chapter.title,
-            )
+            h += f'                <li><a href="{i + 1:03d}.xhtml">{chapter.title}</a></li>'
 
         # footer
 
@@ -300,7 +297,7 @@ class TocNCX(EpubFile):
             h += f'    <navPoint class="chapter" id="navpoint-{i + 1}" playOrder="{i}">\n'
             h += f"        <navLabel>\n            <text>{chapter.title}</text>\n"
             h += "        </navLabel>\n"
-            h += f'        <content src="{i + 1:03i}.xhtml"/>\n'
+            h += f'        <content src="{i + 1:03d}.xhtml"/>\n'
             h += "    </navPoint>\n"
         h += "  </navMap>\n"
 
