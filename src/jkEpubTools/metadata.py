@@ -1,8 +1,8 @@
 import uuid
 
 
-class MetaData(object):
-    def __init__(self, md_dict={}):
+class MetaData:
+    def __init__(self, md_dict: dict[str, str] = {}) -> None:
         self.version = md_dict.get("version", "2.0")
         self.publisher = md_dict.get("publisher", None)
         self.rights = md_dict.get("rights", None)

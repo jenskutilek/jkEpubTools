@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import codecs
 import errno
 from os import makedirs
 from os.path import dirname, exists, join
 from shutil import copyfile
+from typing import Any, NotRequired, TypedDict
 
 from jkEpubTools.files import (
     ContainerXML,
@@ -17,11 +20,33 @@ from jkEpubTools.files import (
 from jkEpubTools.metadata import MetaData
 
 
+class CoverDict(TypedDict):
+    src: str
+    uri: str
+    mime: NotRequired[str]
+    encrypt: NotRequired[bool]
+    width: int
+    height: int
+
+
+class ResourceDict(TypedDict):
+    src: str
+    uri: str
+    mime: NotRequired[str]
+    encrypt: NotRequired[bool]
+
+
+class ChapterDict(TypedDict):
+    id: str
+    title: str
+    src: str
+
+
 class BaseDocument(object):
-    def get_id(self):
+    def get_id(self) -> str:
         return self._id
 
-    def safe_makedirs(self, path):
+    def safe_makedirs(self, path: str) -> None:
         try:
             makedirs(path)
         except OSError as exception:
@@ -30,18 +55,18 @@ class BaseDocument(object):
 
 
 class Document(BaseDocument):
-    def __init__(self, doc_id="unknown", title=""):
+    def __init__(self, doc_id: str = "unknown", title: str = "") -> None:
         self._id = doc_id
         self.title = title
 
-        self.chapters = []
-        self.resources = []
-        self.stylesheet = None
+        self.chapters: list[Chapter] = []
+        self.resources: list[Resource] = []
+        self.stylesheet: str | None = None
 
-        self.cover = None
-        self.metadata = None
+        self.cover: Cover | None = None
+        self.metadata: MetaData | None = None
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         r = "Document '%s'\n    Chapters:\n" % self.title
         for c in self.chapters:
             r += "        %s\n        Sections:\n" % c.title
@@ -49,7 +74,7 @@ class Document(BaseDocument):
                 r += "            %s\n" % s.name
         return r
 
-    def as_dict(self):
+    def as_dict(self) -> dict[str, str | list[str]]:
         return {
             "id": self.get_id(),
             "title": self.title,
@@ -59,29 +84,32 @@ class Document(BaseDocument):
             ],
         }
 
-    def set_metadata_from_dict(self, meta_dict):
+    def set_metadata_from_dict(self, meta_dict: dict[str, str]) -> None:
         self.metadata = MetaData(meta_dict)
 
-    def set_cover_from_dict(self, cover_dict):
+    def set_cover_from_dict(self, cover_dict: CoverDict) -> None:
         self.cover = Cover(cover_dict)
 
-    def add_chapter_from_dict(self, chapter_dict):
+    def add_chapter_from_dict(self, chapter_dict: ChapterDict) -> None:
         c = Chapter()
         c.from_dict(chapter_dict)
         self.chapters.append(c)
 
-    def add_chapters_from_dict_list(self, chapter_list):
+    def add_chapters_from_dict_list(self, chapter_list: list[ChapterDict]) -> None:
         for chapter_dict in chapter_list:
             self.add_chapter_from_dict(chapter_dict)
 
-    def add_resource_from_dict(self, resource_dict):
+    def add_resource_from_dict(self, resource_dict: ResourceDict) -> None:
         self.resources.append(Resource(resource_dict))
 
-    def add_resources_from_dict_list(self, resource_list):
+    def add_resources_from_dict_list(self, resource_list: list[ResourceDict]) -> None:
         for resource_dict in resource_list:
             self.add_resource_from_dict(resource_dict)
 
-    def save_epub(self, epub_root):
+    def save_epub(self, epub_root: str) -> None:
+        if self.metadata is None:
+            raise ValueError("metadata can't be None")
+
         self.safe_makedirs(join(epub_root, "OEBPS"))
         self.safe_makedirs(join(epub_root, "META-INF"))
 
@@ -122,24 +150,24 @@ class Document(BaseDocument):
 
 
 class Chapter(BaseDocument):
-    def __init__(self, chapter_id="", title=""):
+    def __init__(self, chapter_id: str = "", title: str = "") -> None:
         self._id = chapter_id
         self.title = title
-        self.src = None
-        self.sections = []
+        self.src: str | None = None
+        self.sections: list[Any] = []
 
-    def as_dict(self):
+    def as_dict(self) -> dict[str, str | list[dict]]:
         return {
             "id": self.get_id(),
             "sections": [self.sections[i].as_dict() for i in range(len(self.sections))],
         }
 
-    def from_dict(self, chapter_dict):
+    def from_dict(self, chapter_dict: ChapterDict) -> None:
         self._id = chapter_dict.get("id", "")
         self.title = chapter_dict.get("title", "Untitled Chapter")
         self.src = chapter_dict.get("src", None)
 
-    def as_html(self):
+    def as_html(self) -> str:
         # print "Chapter.as_html:", self.get_id()
         x = XHTMLFile(title=self.title, stylesheet_path="style/stylesheet.css")
         h = x.get_header()
@@ -150,7 +178,7 @@ class Chapter(BaseDocument):
         h += x.get_footer()
         return h
 
-    def save_epub(self, epub_root, file_name):
+    def save_epub(self, epub_root: str, file_name: str) -> None:
         base_dir = join(epub_root, "OEBPS")
         self.safe_makedirs(base_dir)
         if self.src is None:
@@ -168,11 +196,10 @@ class Chapter(BaseDocument):
 
 
 class Cover(BaseDocument):
-    def __init__(self, cover_dict):
-        self.src = cover_dict.get("src", None)
-        self.uri = cover_dict.get("uri", None)
-        # TODO guess mime type if not supplied
-        self.mime = cover_dict.get("mime", None)
+    def __init__(self, cover_dict: CoverDict) -> None:
+        self.src = cover_dict["src"]
+        self.uri = cover_dict["uri"]
+        self.mime = cover_dict.get("mime")
         if self.mime is None:
             from jkEpubTools.mime import guess_mime_type
 
@@ -181,11 +208,11 @@ class Cover(BaseDocument):
         self.width = cover_dict.get("width", None)
         self.height = cover_dict.get("height", None)
         if None in (self.width, self.height):
-            print(
-                "ERROR: width and height of cover image must be supplied, or resulting epub will be invalid."
+            raise ValueError(
+                "Width and height of cover image must be supplied, or the resulting epub will be invalid."
             )
 
-    def as_html(self):
+    def as_html(self) -> str:
         # print "Cover.as_html:", self.get_id()
         x = XHTMLFile(title="Cover", stylesheet_path="style/stylesheet.css")
         h = x.get_header()
@@ -203,7 +230,7 @@ class Cover(BaseDocument):
         h += x.get_footer()
         return h
 
-    def save_epub(self, epub_root):
+    def save_epub(self, epub_root: str) -> None:
         base_dir = join(epub_root, "OEBPS")
         self.safe_makedirs(base_dir)
         c = self.as_html()
@@ -219,18 +246,18 @@ class Cover(BaseDocument):
 
 
 class Resource(BaseDocument):
-    def __init__(self, resource_dict):
-        self.src = resource_dict.get("src", None)
-        self.uri = resource_dict.get("uri", None)
+    def __init__(self, resource_dict: ResourceDict) -> None:
+        self.src = resource_dict["src"]
+        self.uri = resource_dict["uri"]
         # TODO guess mime type if not supplied
-        self.mime = resource_dict.get("mime", None)
+        self.mime = resource_dict.get("mime")
         if self.mime is None:
             from jkEpubTools.mime import guess_mime_type
 
             self.mime = guess_mime_type(self.uri)
         self.encrypt = resource_dict.get("encrypt", False)
 
-    def save_epub(self, epub_root):
+    def save_epub(self, epub_root: str) -> None:
         self.safe_makedirs(join(epub_root, "OEBPS", dirname(self.uri)))
         if exists(self.src):
             copyfile(self.src, join(epub_root, "OEBPS", self.uri))

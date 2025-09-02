@@ -9,9 +9,11 @@ from jkEpubTools.obfuscation import (
 )
 
 
-def build(in_path, out_file):
+def build(in_path: str, out_file: str) -> None:
     # build obfuscation key
     key = get_obfuscation_key(in_path)
+    if key is None:
+        raise ValueError("Could not determine obfuscation key")
 
     # read file names from encryption.xml
     print("Obfuscating requested files ...")

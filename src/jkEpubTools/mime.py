@@ -8,7 +8,7 @@ mime_types = {
 }
 
 
-def guess_mime_type(filename):
+def guess_mime_type(filename: str) -> str:
     suffix = filename.rsplit(".")[-1]
     if suffix in mime_types:
         return mime_types[suffix]

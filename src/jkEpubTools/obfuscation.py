@@ -1,11 +1,13 @@
+from __future__ import annotations
+
 from hashlib import sha1
 from os.path import exists, join
 from re import IGNORECASE, compile
 
 
-def get_data_from_xml(xml_path, regex, one=True):
+def get_data_from_xml(xml_path: str, regex: str, one: bool = True) -> list:
     c_regex = compile(regex, IGNORECASE)
-    xml = open(xml_path, "rb")
+    xml = open(xml_path, "rb", encoding="utf-8")
 
     matches = []
     for line in xml:
@@ -14,16 +16,16 @@ def get_data_from_xml(xml_path, regex, one=True):
             try:
                 matches.append(match.group(2))
             except:
-                print('  WARNING: Could not extract data from "%s".' % xml_path)
-                print("    Line was:  %s" % line)
-                print("    Regex was: %s" % regex)
+                print(f'  WARNING: Could not extract data from "{xml_path}".')
+                print(f"    Line was:  {line}")
+                print(f"    Regex was: {regex}")
             if one:
                 break
     xml.close()
     return matches
 
 
-def get_files_to_obfuscate(source_path):
+def get_files_to_obfuscate(source_path: str) -> list:
     # Find and return the full paths of all files that should be encrypted
     file_path = join(source_path, "META-INF", "encryption.xml")
     if not exists(file_path):
@@ -37,7 +39,7 @@ def get_files_to_obfuscate(source_path):
     )
 
 
-def get_obfuscation_key(source_path):
+def get_obfuscation_key(source_path: str) -> bytearray | None:
     print("Building obfuscation key ...")
     print(
         '  Looking for .opf paths in "%s" ...'
@@ -100,7 +102,7 @@ def get_obfuscation_key(source_path):
     return bytearray(key.digest())
 
 
-def xor_array(array, key):
+def xor_array(array: bytearray, key: bytearray) -> bytearray:
     for i in range(min(len(array), 1040)):
         j = i % len(key)
         # print("XOR pos: %i, key: %i" % (i, j))
