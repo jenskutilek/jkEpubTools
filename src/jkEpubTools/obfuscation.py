@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import codecs
 from hashlib import sha1
 from os.path import exists, join
 from re import IGNORECASE, compile
@@ -7,21 +8,20 @@ from re import IGNORECASE, compile
 
 def get_data_from_xml(xml_path: str, regex: str, one: bool = True) -> list:
     c_regex = compile(regex, IGNORECASE)
-    xml = open(xml_path, "rb", encoding="utf-8")
 
     matches = []
-    for line in xml:
-        match = c_regex.search(line)
-        if match is not None:
-            try:
-                matches.append(match.group(2))
-            except:
-                print(f'  WARNING: Could not extract data from "{xml_path}".')
-                print(f"    Line was:  {line}")
-                print(f"    Regex was: {regex}")
-            if one:
-                break
-    xml.close()
+    with codecs.open(xml_path, "rb", "utf-8") as xml:
+        for line in xml.readlines():
+            match = c_regex.search(line)
+            if match is not None:
+                try:
+                    matches.append(match.group(2))
+                except:
+                    print(f'  WARNING: Could not extract data from "{xml_path}".')
+                    print(f"    Line was:  {line}")
+                    print(f"    Regex was: {regex}")
+                if one:
+                    break
     return matches
 
 
